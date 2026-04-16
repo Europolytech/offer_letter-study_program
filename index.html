@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EuroPolytech Offer Letter Generator</title>
+
+  <style>
+    :root{
+      --primary:#003366;
+      --bg:#f4f7f9;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --soft:#fafbfc;
+      --success:#28a745;
+      --danger:#b91c1c;
+    }
+
+    body{
+      font-family: 'Times New Roman', Times, serif;
+      background: var(--bg);
+      margin:0;
+      padding:20px;
+      color:#111827;
+    }
+
+    .no-print{
+      max-width:1100px;
+      margin:0 auto 30px;
+      background: var(--card);
+      padding:26px;
+      border-radius:12px;
+      box-shadow:0 6px 24px rgba(0,0,0,.08);
+      font-family: Arial, sans-serif;
+      border:1px solid var(--border);
+    }
+
+    .title{
+      color:var(--primary);
+      text-align:center;
+      margin:0 0 10px;
+      font-size:22px;
+      letter-spacing:.2px;
+    }
+
+    .subtitle{
+      text-align:center;
+      color:var(--muted);
+      margin:0 0 16px;
+      font-size:13px;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      margin:18px 0 18px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .tab-btn{
+      padding:12px 18px;
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#f3f4f6;
+      color:#111827;
+      border-radius:10px;
+      font-weight:700;
+      font-size:13px;
+      transition:.15s ease-in-out;
+    }
+    .tab-btn:hover{ transform: translateY(-1px); }
+    .tab-btn.active{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+    }
+
+    .help-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      margin:8px 0 18px;
+      padding:12px 14px;
+      background: var(--soft);
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-size:12px;
+      color:#111827;
+    }
+    .help-row .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:#fff;
+      color:var(--muted);
+      font-weight:700;
+      font-size:11px;
+      white-space:nowrap;
+    }
+
+    .status-line{
+      width:100%;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:12px;
+      color:#111827;
+      display:none;
+      margin-top:8px;
+      white-space:pre-line;
+    }
+    .status-line.ok{ border-color: rgba(40,167,69,.35); background: rgba(40,167,69,.08); }
+    .status-line.bad{ border-color: rgba(185,28,28,.35); background: rgba(185,28,28,.08); }
+
+    .form-section{
+      border:1px solid var(--border);
+      padding:16px;
+      border-radius:12px;
+      margin-bottom:14px;
+      background: var(--soft);
+    }
+
+    .section-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .section-label{
+      font-size:12px;
+      font-weight:800;
+      color:var(--primary);
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      margin:0;
+    }
+
+    .section-note{
+      font-size:11px;
+      color:var(--muted);
+      margin:0;
+      text-align:right;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:12px;
+    }
+
+    .form-group{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+
+    label{
+      font-size:11px;
+      font-weight:800;
+      margin-bottom:6px;
+      color:#374151;
+    }
+
+    input, select, textarea{
+      padding:10px 10px;
+      border:1px solid #cfd8e3;
+      border-radius:10px;
+      font-size:13px;
+      background:#fff;
+      outline:none;
+    }
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(0,51,102,.55);
+      box-shadow: 0 0 0 3px rgba(0,51,102,.12);
+    }
+
+    .readonly{
+      background:#f3f4f6 !important;
+      color:#374151;
+    }
+
+    .hint{
+      margin-top:6px;
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.3;
+    }
+
+    .c-12{ grid-column: span 12; }
+    .c-8{ grid-column: span 8; }
+    .c-6{ grid-column: span 6; }
+    .c-4{ grid-column: span 4; }
+    .c-3{ grid-column: span 3; }
+
+    @media (max-width: 980px){
+      .c-3, .c-4{ grid-column: span 6; }
+      .c-8{ grid-column: span 12; }
+    }
+    @media (max-width: 640px){
+      .c-6, .c-3, .c-4{ grid-column: span 12; }
+      .help-row{ justify-content:center; }
+      .section-note{ text-align:left; }
+      body{ padding:12px; }
+      .no-print{ padding:16px; }
+    }
+
+    .btn-row{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width:860px){ .btn-row{ grid-template-columns: 1fr; } }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:900;
+      padding:14px 16px;
+      font-size:14px;
+      transition:.15s ease-in-out;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+
+    .btn-generate{ background: #111827; color:#fff; }
+    .btn-save{ background: var(--success); color:#fff; }
+    .btn-print{ background: var(--primary); color:#fff; display:none; }
+
+    /* =========================
+       Print letter
+       ========================= */
+    #letter-output{
+      background:white;
+      width:210mm;
+      margin:0 auto;
+      display:none;
+    }
+
+    .letter-page{
+      width:210mm;
+      min-height:297mm;
+      padding:15mm 20mm;
+      box-sizing:border-box;
+      background:white;
+      page-break-after:always;
+      color:#000;
+      font-size:11.5px;
+      line-height:1.45;
+      position:relative;
+    }
+
+    .letter-header{
+      display:grid;
+      grid-template-columns: 58px 1fr 1fr;
+      gap:12px;
+      align-items:center;
+      border-bottom:2px solid var(--primary);
+      padding-bottom:8px;
+      margin-bottom:12px;
+    }
+
+    .logo-box{
+      width:58px;
+      height:58px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .logo-box img{
+      max-width:58px;
+      max-height:58px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .inst-name{
+      font-weight:900;
+      font-size:18px;
+      color:var(--primary);
+      letter-spacing:.2px;
+      line-height:1.1;
+    }
+
+    .inst-info{
+      font-size:9px;
+      color:var(--primary);
+      line-height:1.25;
+      text-align:right;
+    }
+
+    .ref-row{
+      display:flex;
+      justify-content:space-between;
+      font-weight:900;
+      margin:10px 0 8px;
+      font-size:12px;
+    }
+
+    .centered-title{
+      text-align:center;
+      font-weight:900;
+      font-size:14px;
+      text-decoration:underline;
+      margin:12px 0 12px;
+      text-transform:uppercase;
+      letter-spacing:.3px;
+    }
+
+    .section-header{
+      font-weight:900;
+      text-decoration:underline;
+      display:block;
+      margin-top:12px;
+      margin-bottom:6px;
+    }
+
+    .sig-row{
+      margin-top:28px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:12px;
+    }
+
+    .stamp-placeholder{
+      width:110px;
+      height:110px;
+      border:1px dashed #bbb;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:9px;
+      color:#999;
+      padding:6px;
+    }
+
+    .mini-contact{
+      font-size:10px;
+      margin-top:10px;
+      line-height:1.25;
+    }
+
+    @media print{
+      .no-print, header, footer, nav { display:none !important; }
+      body, html{ background:white !important; margin:0 !important; padding:0 !important; }
+      #letter-output{ display:block !important; margin:0 !important; width:100% !important; }
+      .letter-page{ border:none !important; box-shadow:none !important; width:100% !important; margin:0 !important; }
+    }
+  </style>
+
+  <div class="no-print">
+    <h2 class="title">EuroPolytech Offer Letter Generator</h2>
+    <p class="subtitle">EU mode excludes visa-only wording • International mode generates EN+PT • Saves to Google Sheets</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="btn-eu" onclick="setMode('EU')">EU Citizen / Resident</button>
+      <button class="tab-btn" id="btn-intl" onclick="setMode('INTL')">International Student (EN + PT)</button>
+    </div>
+
+    <div class="help-row">
+      <span class="pill" id="pill-days">📅 Duration: —</span>
+      <span class="pill" id="pill-cap">🛡️ Schengen cap: —</span>
+      <span class="pill" id="pill-save">💾 Save status: Not saved</span>
+      <div class="status-line" id="statusLine"></div>
+    </div>
+
+    <!-- 0. Institution -->
+    <div class="form-section">
+      <div class="section-head">
+        <p class="section-label">0. Institution and Issuer</p>
+        <p class="section-note">Printed header details</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group c-6">
+          <label>Institution Legal Name</label>
+          <input type="text" id="instLegal" value="EUROPOLYTECH ACADEMY, UNIPESSOAL LDA" />
+        </div>
+        <div class="form-group c-6">
+          <label>Brand Name</label>
+          <input type="text" id="instBrand" value="EUROPOLYTECH ACADEMY" />
+        </div>
+        <div class="form-group c-8">
+          <label>Address</label>
+          <input type="text" id="instAddr" value="R. Covas de Cima, 159 B, Guimarães, Portugal" />
+        </div>
+        <div class="form-group c-4">
+          <label>Phone</label>
+          <input type="text" id="instPhone" value="+351 920 447 663" />
+        </div>
+        <div class="form-group c-6">
+          <label>Admissions Email</label>
+          <input type="email" id="instEmail" value="admissions@europolytech.academy" />
+        </div>
+        <div class="form-group c-6">
+          <label>Verification Contact</label>
+          <input type="text" id="verifPerson" value="Rebeca Sabbatini (Admissions Officer)" />
+        </div>
+        <div class="form-group c-6">
+          <label>Verification Email</label>
+          <input type="email" id="verifEmail" value="rebeca.s@europolytech.academy" />
+        </div>
+        <div class="form-group c-6">
+          <label>Verification Phone</label>
+          <input type="text" id="verifPhone" value="+351 220 187" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. Participant -->
+    <div class="form-section">
+      <div class="section-head">
+        <p class="section-label">1. Participant Details</p>
+        <p class="section-note">Match passport exactly</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group c-4">
+          <label>First Name</label>
+          <input type="text" id="fName" />
+        </div>
+        <div class="form-group c-4">
+          <label>Last Name</label>
+          <input type="text" id="lName" />
+        </div>
+        <div class="form-group c-4">
+          <label>Passport / ID Number</label>
+          <input type="text" id="idNum" />
+        </div>
+        <div class="form-group c-3">
+          <label>Date of Birth</label>
+          <input type="date" id="dob" />
+        </div>
+        <div class="form-group c-3" id="intl-nat-box" style="display:none;">
+          <label>Nationality (International only)</label>
+          <input type="text" id="nat" />
+        </div>
+        <div class="form-group c-3">
+          <label>Letter Date</label>
+          <input type="date" id="letterDate" />
+        </div>
+        <div class="form-group c-3">
+          <label>Reference Number (auto)</label>
+          <input type="text" id="ref" placeholder="Auto-generated" />
+          <div class="hint">Auto-generated per mode. You can still overwrite it manually if needed.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Programme -->
+    <div class="form-section">
+      <div class="section-head">
+        <p class="section-label">2. Programme Information</p>
+        <p class="section-note">International programmes must be ≤ 90 days</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group c-8">
+          <label>Programme Title</label>
+          <select id="prog">
+            <option>OTHM Level 3 Foundation Diploma in Information Technology</option>
+            <option>OTHM Level 3 Diploma in Business Management</option>
+            <option>OTHM Level 3 Foundation Diploma in Engineering</option>
+            <option>OTHM Level 3 Foundation Diploma in Health and Social Care</option>
+            <option>OTHM Level 4 Diploma in Health and Social Care Management</option>
+            <option>OTHM Level 3 Foundation Diploma for Higher Education Studies</option>
+            <option>OTHM Level 4 Diploma in Cyber Security</option>
+            <option>OTHM Level 4 Diploma in Business Management</option>
+            <option>OTHM Level 4 Diploma in Tourism and Hospitality Management</option>
+            <option>OTHM Level 4 Diploma in Information Technology</option>
+          </select>
+        </div>
+        <div class="form-group c-4">
+          <label>Type of Programme</label>
+          <select id="progType"></select>
+        </div>
+        <div class="form-group c-4">
+          <label>Mode of Delivery</label>
+          <select id="modeDel">
+            <option>On-site</option>
+            <option>Blended</option>
+            <option>Online</option>
+          </select>
+        </div>
+        <div class="form-group c-4">
+          <label>Language of Instruction</label>
+          <select id="lang">
+            <option>English</option>
+            <option>Portuguese</option>
+            <option>English & Portuguese</option>
+          </select>
+        </div>
+        <div class="form-group c-4">
+          <label>Weekly Contact Hours</label>
+          <input type="text" id="hours" placeholder="e.g., 15–25 hours per week" />
+        </div>
+        <div class="form-group c-3">
+          <label>Start Date</label>
+          <input type="date" id="start" onchange="calcDuration()" />
+        </div>
+        <div class="form-group c-3">
+          <label>End Date</label>
+          <input type="date" id="end" onchange="calcDuration()" />
+        </div>
+        <div class="form-group c-3">
+          <label>Total Days</label>
+          <input type="text" id="durDisplay" class="readonly" readonly />
+        </div>
+        <div class="form-group c-3">
+          <label>Cap Check</label>
+          <input type="text" id="capCheck" class="readonly" readonly />
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- 2B. Programme of Study Details -->
+    <div class="form-section">
+      <div class="section-head">
+        <p class="section-label">2B. Programme of Study Details</p>
+        <p class="section-note">Used for bilingual Programme of Study pages</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group c-8">
+          <label>Delivery Site</label>
+          <input type="text" id="deliverySite" value="Rua Camilo Castelo Branco 79, 4425-037 Águas Santas, Porto – Portugal" />
+        </div>
+        <div class="form-group c-4">
+          <label>Programme Level</label>
+          <input type="text" id="progLevel" placeholder="e.g., Level 3 (Equivalent to UK pre-university foundation level; aligned with RQF/EQF frameworks)" />
+        </div>
+        <div class="form-group c-6">
+          <label>Awarding Body</label>
+          <input type="text" id="awardingBody" value="OTHM (UK Ofqual-regulated awarding organisation)" />
+        </div>
+        <div class="form-group c-6">
+          <label>Official Programme Link</label>
+          <input type="text" id="progLink" placeholder="https://..." />
+        </div>
+        <div class="form-group c-12">
+          <label>Purpose of Programme</label>
+          <textarea id="purposeText" rows="5">This programme is designed to provide foundational academic and practical knowledge for learners seeking:
+
+Entry into higher-level studies
+Exposure to applied principles
+Development of technical and analytical skills
+
+It is strictly a short-term educational programme for academic and professional development.
+
+It does not constitute long-term study, does not lead to residency, and does not involve employment.</textarea>
+        </div>
+        <div class="form-group c-12">
+          <label>Core Study Areas / Modules</label>
+          <textarea id="studyAreas" rows="10" placeholder="One module per paragraph. Example:
+Engineering Principles (10 credits)
+Introduces...
+
+Design Technology (10 credits)
+Covers..."></textarea>
+          <div class="hint">Use a blank line between modules for cleaner output.</div>
+        </div>
+        <div class="form-group c-6">
+          <label>Weekly Academic Schedule</label>
+          <textarea id="weeklySchedule" rows="7">20 contact hours per week, typically distributed as:
+
+Lectures: 10–12 hours
+Workshops / Practical Sessions: 6–8 hours
+Guided Study / Tutorials: 2–4 hours
+
+Independent Learning:
+Students are expected to complete additional coursework and assignments outside scheduled hours.</textarea>
+        </div>
+        <div class="form-group c-6">
+          <label>Teaching and Learning Approach</label>
+          <textarea id="teachingApproach" rows="7">Lectures (conceptual understanding)
+Practical workshops (application of knowledge)
+Case-based learning (real-world scenarios)
+Guided academic support and tutorials
+
+This approach ensures both theoretical grounding and applied competence.</textarea>
+        </div>
+        <div class="form-group c-6">
+          <label>Assessment Methodology</label>
+          <textarea id="assessmentMethod" rows="7">Assessment is based on coursework, continuous evaluation and assignment submission.
+
+Assessment methods include:
+Written assignments
+Practical tasks and applied exercises
+Project-based work
+Tutor feedback and progress evaluation.</textarea>
+        </div>
+        <div class="form-group c-6">
+          <label>Expected Learning Outcomes</label>
+          <textarea id="learningOutcomes" rows="7">Upon completion, the participant is expected to:
+Demonstrate understanding of fundamental concepts
+Apply mathematical and scientific principles to relevant problems
+Interpret technical information
+Develop analytical and problem-solving skills
+Prepare for progression into higher-level studies</textarea>
+        </div>
+        <div class="form-group c-12">
+          <label>Accreditation / Authorisation Text</label>
+          <textarea id="accreditationText" rows="8">EuroPolytech Academy, operated by EUROPOLYTECH ACADEMY, UNIPESSOAL LDA, is an approved and authorised centre of OTHM (UK), an Ofqual-regulated awarding organisation. The institution is licensed to deliver this programme at its approved delivery site in Porto, Portugal, subject to internal quality assurance and external verification processes.</textarea>
+        </div>
+        <div class="form-group c-8">
+          <label>Certification Awarded</label>
+          <input type="text" id="certAward" placeholder="e.g., OTHM Level 3 Foundation Diploma in Engineering (subject to meeting assessment requirements)" />
+        </div>
+        <div class="form-group c-4">
+          <label>Output Type</label>
+          <select id="outputMode">
+            <option value="PACK">Offer Letter + Programme of Study</option>
+            <option value="OFFER">Offer Letter only</option>
+            <option value="PROGRAMME">Programme of Study only</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2C. Portuguese Programme Text -->
+    <div class="form-section">
+      <div class="section-head">
+        <p class="section-label">2C. Portuguese Programme Text Blocks</p>
+        <p class="section-note">Used in the Portuguese Programme of Study page</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group c-4">
+          <label>Programme Level (PT)</label>
+          <input type="text" id="progLevelPT" placeholder="e.g., Nível 3 (...)" />
+        </div>
+        <div class="form-group c-4">
+          <label>Awarding Body (PT)</label>
+          <input type="text" id="awardingBodyPT" value="OTHM (organismo de atribuição regulamentado pela Ofqual no Reino Unido)" />
+        </div>
+        <div class="form-group c-4">
+          <label>Certification Awarded (PT)</label>
+          <input type="text" id="certAwardPT" placeholder="e.g., OTHM Level 3..." />
+        </div>
+        <div class="form-group c-12">
+          <label>Purpose of Programme (PT)</label>
+          <textarea id="purposeTextPT" rows="5">Este programa foi concebido para proporcionar conhecimentos académicos e práticos fundamentais a estudantes que procuram:
+
+Prosseguir estudos de nível superior
+Contactar com princípios aplicados da área
+Desenvolver competências técnicas e analíticas
+
+Trata-se estritamente de um programa educativo de curta duração para fins académicos e de desenvolvimento profissional.
+
+Não constitui estudos de longa duração, não conduz à residência e não envolve emprego.</textarea>
+        </div>
+        <div class="form-group c-12">
+          <label>Core Study Areas / Modules (PT)</label>
+          <textarea id="studyAreasPT" rows="10" placeholder="Um módulo por bloco, em português."></textarea>
+        </div>
+        <div class="form-group c-6">
+          <label>Weekly Academic Schedule (PT)</label>
+          <textarea id="weeklySchedulePT" rows="7">20 horas de contacto por semana, normalmente distribuídas da seguinte forma:
+
+Aulas teóricas: 10–12 horas
+Workshops / Sessões práticas: 6–8 horas
+Estudo orientado / Tutoriais: 2–4 horas
+
+Aprendizagem independente:
+Espera-se que os estudantes realizem trabalho adicional e tarefas fora do horário programado.</textarea>
+        </div>
+        <div class="form-group c-6">
+          <label>Teaching and Learning Approach (PT)</label>
+          <textarea id="teachingApproachPT" rows="7">Aulas teóricas (compreensão conceptual)
+Workshops práticos (aplicação do conhecimento)
+Aprendizagem baseada em casos (cenários reais)
+Apoio académico orientado e tutoriais
+
+Esta abordagem assegura uma base teórica sólida e competência aplicada.</textarea>
+        </div>
+        <div class="form-group c-6">
+          <label>Assessment Methodology (PT)</label>
+          <textarea id="assessmentMethodPT" rows="7">A avaliação baseia-se em trabalhos, avaliação contínua e submissão de assignments.
+
+Os métodos de avaliação incluem:
+Trabalhos escritos
+Tarefas práticas e exercícios aplicados
+Trabalho baseado em projetos
+Feedback do tutor e avaliação do progresso.</textarea>
+        </div>
+        <div class="form-group c-6">
+          <label>Expected Learning Outcomes (PT)</label>
+          <textarea id="learningOutcomesPT" rows="7">Após a conclusão, espera-se que o participante:
+Demonstre compreensão dos conceitos fundamentais
+Aplique princípios matemáticos e científicos a problemas relevantes
+Interprete informação técnica
+Desenvolva competências analíticas e de resolução de problemas
+Se prepare para progressão para estudos de nível superior</textarea>
+        </div>
+        <div class="form-group c-12">
+          <label>Accreditation / Authorisation Text (PT)</label>
+          <textarea id="accreditationTextPT" rows="8">A EuroPolytech Academy, operada pela EUROPOLYTECH ACADEMY, UNIPESSOAL LDA, é um centro aprovado e autorizado da OTHM (Reino Unido), um organismo de atribuição regulamentado pela Ofqual. A instituição está autorizada a ministrar este programa no seu local aprovado no Porto, Portugal, estando sujeita a processos internos de garantia da qualidade e a verificação externa.</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Fees -->
+    <div class="form-section">
+      <div class="section-head">
+        <p class="section-label">3. Fees and Payment Condition</p>
+        <p class="section-note">Always included</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group c-3">
+          <label>Total Fee (€)</label>
+          <input type="number" id="fee" value="0" min="0" />
+        </div>
+        <div class="form-group c-3">
+          <label>Payment Status</label>
+          <select id="payStatus">
+            <option value="PAID">Paid in full</option>
+            <option value="PAID">Paid Partially/Deposit</option>
+            <option value="DUE">Payable prior to commencement</option>
+          </select>
+        </div>
+        <div class="form-group c-6">
+          <label>Fee Scope</label>
+          <input type="text" id="feeScope" value="Tuition and academic supervision only, unless otherwise stated." />
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Accommodation -->
+    <div class="form-section">
+      <div class="section-head">
+        <p class="section-label">5. Accommodation</p>
+        <p class="section-note">Recorded and printed</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group c-12">
+          <label>Accommodation Option</label>
+          <select id="accom">
+            <option value="1">Accommodation arranged independently by the participant</option>
+            <option value="2">Accommodation support may be provided upon request</option>
+            <option value="3">Accommodation is not included in the programme fee</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Validity -->
+    <div class="form-section">
+      <div class="section-head">
+        <p class="section-label">7. Validity and Acceptance</p>
+        <p class="section-note">Stored + printed</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group c-4">
+          <label>Offer Valid Until</label>
+          <input type="date" id="validUntil" />
+        </div>
+        <div class="form-group c-8">
+          <label>Notes (stored in Sheet only)</label>
+          <input type="text" id="notes" placeholder="Internal note (not printed)" />
+          <div class="hint">For internal tracking only; not printed on the letter.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-generate" onclick="generatePreview()">Generate Selected Output</button>
+      <button class="btn btn-save" onclick="saveEnrolment()">Save Enrolment to Google Sheet</button>
+      <button class="btn btn-print" id="pBtn" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+  </div>
+
+  <div id="letter-output"></div>
+
+  <script>
+    /*************** REQUIRED CONFIG ***************/
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJmFtWy5oaEKXuV3L-u9Ol6e-RajY4v05qs-_A0E8sM_0MpFi9rQf6X2YDM9EyHHtO0g/exec";
+    const SECRET_TOKEN   = "CHANGE_ME_TO_A_LONG_RANDOM_TOKEN";
+    /***********************************************/
+
+    const LOGO_URL = "https://www.europolytech.academy/EuroPolytech%20Logo%20jpeg.png";
+
+    // --- NEW: programme type options by mode
+    const PROG_TYPES_INTL = [
+      "Short-term study / Professional training",
+      "Short-term professional training",
+      "Short-term study programme"
+    ];
+
+    const PROG_TYPES_EU = [
+      "Short-term study / Professional training",
+      "Short-term professional training",
+      "Short-term study programme",
+      "Long-term study programme (Full-time)",
+      "Long-term study programme (Part-time)",
+      "Long-term professional training (Full-time)",
+      "Long-term professional training (Part-time)"
+    ];
+
+    // --- NEW: auto-reference generation settings
+    const REF_PREFIX_EU = "EPA-EU";
+    const REF_PREFIX_INTL = "EPA-INTL";
+
+    let currentMode = "EU";
+    let lastRecordId = null;
+    let refAutoLocked = true; // becomes false if user manually edits reference
+
+    const paymentEN = `This offer letter is issued conditionally and is only valid when accompanied by official evidence of full payment of the applicable programme fees made by the participant.
+
+In the absence of confirmed full payment, this letter does not constitute a valid confirmation of participation and must not be relied upon for visa or travel purposes.
+
+Final confirmation of participation is granted only after receipt and verification of full payment by the institution.`;
+
+    const paymentPT = `A presente carta de oferta é emitida de forma condicionada e apenas é válida quando acompanhada de comprovativo oficial de pagamento integral das taxas do programa efetuado pelo participante.
+
+Na ausência de confirmação do pagamento total, esta carta não constitui confirmação válida de participação e não deverá ser utilizada para efeitos de pedido de visto ou deslocação.
+
+A confirmação final da participação ocorre apenas após a receção e verificação do pagamento integral por parte da instituição.`;
+
+    // --- UPDATED: added "no employment can be undertaken"
+    const visaEN = `This letter is issued solely to support an application for a Short-Stay Schengen Visa (Type C) for the purpose of short-term study or training.
+
+The participant acknowledges that:
+- The stay in the Schengen Area must not exceed 90 days
+- No residence rights are granted
+- Departure from the Schengen Area is required upon completion of the programme
+- No employment (paid or unpaid) may be undertaken during the stay
+- Visa approval remains at the sole discretion of the relevant consular or immigration authorities`;
+
+    // --- UPDATED: Portuguese equivalent
+    const visaPT = `Esta carta é emitida para apoiar um pedido de Visto Schengen de Curta Duração (Tipo C), com o objetivo de frequentar estudos ou formação até 90 dias.
+
+O participante declara estar ciente de que:
+- A permanência no Espaço Schengen não pode exceder 90 dias
+- Não são concedidos direitos de residência
+- Deve abandonar o Espaço Schengen após o término do programa
+- Não pode exercer qualquer atividade laboral (remunerada ou não) durante a estadia
+- A concessão do visto depende exclusivamente das autoridades consulares competentes`;
+
+    const complianceEN = `The participant is expected to attend the programme as scheduled, comply with institutional regulations, and respect all conditions attached to the Schengen visa. Failure to comply may result in withdrawal from the programme.`;
+
+    const compliancePT = `O participante compromete-se a frequentar o programa conforme calendarizado, cumprir os regulamentos internos da instituição e respeitar todas as condições associadas ao visto Schengen. O incumprimento poderá resultar na exclusão do programa.`;
+
+    (function init(){
+      const todayISO = new Date().toISOString().slice(0,10);
+      document.getElementById("letterDate").value = todayISO;
+
+      // NEW: watch reference for manual overrides
+      const refEl = document.getElementById("ref");
+      refEl.addEventListener("input", () => {
+        // If user types anything, we consider it manual override unless it matches our auto scheme exactly.
+        // A simple approach: once they type, stop auto-updating.
+        refAutoLocked = false;
+      });
+
+      // NEW: auto update ref when letter date changes (if auto is enabled)
+      document.getElementById("letterDate").addEventListener("change", () => {
+        if (refAutoLocked) autoGenerateReference();
+      });
+
+      // NEW: populate programme type dropdown for default mode (EU)
+      populateProgrammeTypes();
+
+      // NEW: auto-generate reference on load (EU)
+      autoGenerateReference();
+      autoFillProgrammeMeta();
+      document.getElementById("prog").addEventListener("change", autoFillProgrammeMeta);
+
+      calcDuration();
+      updateSavePill("Not saved");
+    })();
+
+    function populateProgrammeTypes(){
+      const el = document.getElementById("progType");
+      const list = (currentMode === "EU") ? PROG_TYPES_EU : PROG_TYPES_INTL;
+      const current = el.value;
+
+      el.innerHTML = "";
+      list.forEach(v => {
+        const opt = document.createElement("option");
+        opt.textContent = v;
+        opt.value = v;
+        el.appendChild(opt);
+      });
+
+      // try keep selection if still available
+      if (current && list.includes(current)) el.value = current;
+      else el.selectedIndex = 0;
+    }
+
+    // NEW: generates EPA-EU-YYYY-#### or EPA-INTL-YYYY-#### and fills #ref (if auto locked)
+    function autoGenerateReference(){
+      const refEl = document.getElementById("ref");
+      const dateISO = document.getElementById("letterDate").value || new Date().toISOString().slice(0,10);
+      const year = String(dateISO).slice(0,4);
+      const prefix = (currentMode === "EU") ? REF_PREFIX_EU : REF_PREFIX_INTL;
+
+      // 4-digit sequential-like number (client-side). If you want it truly sequential across staff,
+      // we can move it to Apps Script later.
+      const seq = String(Math.floor(1000 + Math.random() * 9000)); // 1000–9999
+
+      const generated = `${prefix}-${year}-${seq}`;
+
+      // Only overwrite if still in auto mode OR empty
+      if (refAutoLocked || !refEl.value.trim()){
+        refEl.value = generated;
+      }
+    }
+
+    function setMode(m){
+      currentMode = m;
+      document.getElementById("btn-eu").classList.toggle("active", m === "EU");
+      document.getElementById("btn-intl").classList.toggle("active", m === "INTL");
+      document.getElementById("intl-nat-box").style.display = (m === "INTL") ? "flex" : "none";
+
+      // NEW: refresh programme types based on mode
+      populateProgrammeTypes();
+
+      // NEW: auto-reference per mode (only if user hasn't manually overridden)
+      if (refAutoLocked) autoGenerateReference();
+
+      lastRecordId = null;
+      document.getElementById("pBtn").style.display = "none";
+      updateSavePill("Not saved");
+      showStatus("ok", "Mode switched. Generate preview, then save.");
+    }
+
+    function daysBetween(startStr, endStr){
+      if (!startStr || !endStr) return null;
+      const s = new Date(startStr);
+      const e = new Date(endStr);
+      if (isNaN(s) || isNaN(e)) return null;
+      const diff = e - s;
+      if (diff <= 0) return 0;
+      return Math.ceil(diff / (1000*60*60*24));
+    }
+
+    function calcDuration(){
+      const start = document.getElementById("start").value;
+      const end = document.getElementById("end").value;
+      const days = daysBetween(start, end);
+
+      const durField = document.getElementById("durDisplay");
+      const capField = document.getElementById("capCheck");
+      const pillDays = document.getElementById("pill-days");
+      const pillCap = document.getElementById("pill-cap");
+
+      if (days === null){
+        durField.value = "";
+        capField.value = "";
+        pillDays.textContent = "📅 Duration: —";
+        pillCap.textContent = "🛡️ Schengen cap: —";
+        return;
+      }
+
+      durField.value = days + " day(s)";
+      pillDays.textContent = "📅 Duration: " + days + " day(s)";
+
+      // Only meaningful for INTL, but we keep it visible (it's still informative)
+      if (days === 0){
+        capField.value = "End date must be after start date";
+        capField.style.color = "var(--danger)";
+        pillCap.textContent = "🛡️ Schengen cap: invalid dates";
+      } else if (days > 90){
+        capField.value = "Exceeds 90 days (NOT Type C)";
+        capField.style.color = "var(--danger)";
+        pillCap.textContent = "🛡️ Schengen cap: exceeded";
+      } else {
+        capField.value = "OK (≤ 90 days)";
+        capField.style.color = "#065f46";
+        pillCap.textContent = "🛡️ Schengen cap: OK";
+      }
+    }
+
+    function formatDateEN(dateISO){
+      if (!dateISO) return "";
+      return new Date(dateISO).toLocaleDateString("en-GB", { day:"2-digit", month:"long", year:"numeric" });
+    }
+    function formatDatePT(dateISO){
+      if (!dateISO) return "";
+      return new Date(dateISO).toLocaleDateString("pt-PT");
+    }
+
+    function escapeHTML(str){
+      return (str || "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
+    function nl2brSafe(str){ return escapeHTML(str).replace(/\n/g, "<br>"); }
+
+    function renderHeader(d){
+      return `
+        <div class="letter-header">
+          <div class="logo-box"><img src="${LOGO_URL}" alt="EuroPolytech logo"></div>
+          <div class="inst-name">${escapeHTML(d.instBrand)}</div>
+          <div class="inst-info">
+            ${escapeHTML(d.instLegal)}<br>
+            ${escapeHTML(d.instAddr)}<br>
+            Tel: ${escapeHTML(d.instPhone)} | ${escapeHTML(d.instEmail)}
+          </div>
+        </div>
+      `;
+    }
+
+    function collectData(){
+      const letterDateISO = document.getElementById("letterDate").value || new Date().toISOString().slice(0,10);
+
+      const startISO = document.getElementById("start").value;
+      const endISO = document.getElementById("end").value;
+      const totalDays = daysBetween(startISO, endISO);
+
+      const accomEl = document.getElementById("accom");
+      const accomText = accomEl.options[accomEl.selectedIndex].text;
+
+      return {
+        mode: currentMode,
+
+        instLegal: document.getElementById("instLegal").value,
+        instBrand: document.getElementById("instBrand").value,
+        instAddr: document.getElementById("instAddr").value,
+        instPhone: document.getElementById("instPhone").value,
+        instEmail: document.getElementById("instEmail").value,
+        verifPerson: document.getElementById("verifPerson").value,
+        verifEmail: document.getElementById("verifEmail").value,
+        verifPhone: document.getElementById("verifPhone").value,
+
+        fName: document.getElementById("fName").value,
+        lName: document.getElementById("lName").value,
+        idNum: document.getElementById("idNum").value,
+        dobISO: document.getElementById("dob").value,
+        nat: (currentMode === "INTL") ? (document.getElementById("nat").value || "") : "EU Citizen/Resident",
+        ref: document.getElementById("ref").value,
+        letterDateISO,
+
+        prog: document.getElementById("prog").value,
+        progType: document.getElementById("progType").value,
+        modeDel: document.getElementById("modeDel").value,
+        lang: document.getElementById("lang").value,
+        hours: document.getElementById("hours").value,
+        startISO,
+        endISO,
+        totalDays,
+
+        deliverySite: document.getElementById("deliverySite").value,
+        progLevel: document.getElementById("progLevel").value,
+        awardingBody: document.getElementById("awardingBody").value,
+        progLink: document.getElementById("progLink").value,
+        purposeText: document.getElementById("purposeText").value,
+        studyAreas: document.getElementById("studyAreas").value,
+        weeklySchedule: document.getElementById("weeklySchedule").value,
+        teachingApproach: document.getElementById("teachingApproach").value,
+        assessmentMethod: document.getElementById("assessmentMethod").value,
+        learningOutcomes: document.getElementById("learningOutcomes").value,
+        accreditationText: document.getElementById("accreditationText").value,
+        certAward: document.getElementById("certAward").value,
+        progLevelPT: document.getElementById("progLevelPT").value,
+        awardingBodyPT: document.getElementById("awardingBodyPT").value,
+        purposeTextPT: document.getElementById("purposeTextPT").value,
+        studyAreasPT: document.getElementById("studyAreasPT").value,
+        weeklySchedulePT: document.getElementById("weeklySchedulePT").value,
+        teachingApproachPT: document.getElementById("teachingApproachPT").value,
+        assessmentMethodPT: document.getElementById("assessmentMethodPT").value,
+        learningOutcomesPT: document.getElementById("learningOutcomesPT").value,
+        accreditationTextPT: document.getElementById("accreditationTextPT").value,
+        certAwardPT: document.getElementById("certAwardPT").value,
+        outputMode: document.getElementById("outputMode").value,
+
+        fee: document.getElementById("fee").value,
+        payStatus: document.getElementById("payStatus").value,
+        feeScope: document.getElementById("feeScope").value,
+
+        accomText,
+
+        validUntilISO: document.getElementById("validUntil").value,
+        notes: document.getElementById("notes").value
+      };
+    }
+
+    function validate(d){
+      const issues = [];
+      if (!d.fName || !d.lName) issues.push("Participant name is missing.");
+      if (!d.idNum) issues.push("Passport/ID number is missing.");
+      if (d.mode === "INTL" && !d.nat) issues.push("Nationality is required for International students.");
+      if (!d.ref) issues.push("Reference number is missing.");
+      if (!d.startISO || !d.endISO) issues.push("Start and End dates are required.");
+      if (!d.totalDays || d.totalDays === 0) issues.push("End date must be after Start date.");
+
+      if (d.mode === "INTL" && d.totalDays > 90) issues.push("International programmes must be ≤ 90 days for Schengen Type C.");
+
+      if (d.outputMode !== "OFFER") {
+        if (!d.deliverySite) issues.push("Delivery site is required for the Programme of Study.");
+        if (!d.progLevel) issues.push("Programme level is required for the Programme of Study.");
+        if (!d.awardingBody) issues.push("Awarding body is required for the Programme of Study.");
+        if (!d.studyAreas) issues.push("Core study areas / modules are required for the Programme of Study.");
+        if (!d.certAward) issues.push("Certification awarded is required for the Programme of Study.");
+        if (!d.progLevelPT) issues.push("Programme level (PT) is required for the Portuguese Programme of Study.");
+        if (!d.studyAreasPT) issues.push("Core study areas / modules (PT) are required for the Portuguese Programme of Study.");
+        if (!d.certAwardPT) issues.push("Certification awarded (PT) is required for the Portuguese Programme of Study.");
+      }
+
+      return issues;
+    }
+
+    function generatePreview(){
+      const d = collectData();
+      const issues = validate(d);
+      if (issues.length){
+        showStatus("bad", "Please fix:\n- " + issues.join("\n- "));
+        alert("Please fix:\n\n- " + issues.join("\n- "));
+        return;
+      }
+
+      document.title = `${d.fName}_${d.lName}_${d.ref}`.replace(/\s+/g,"_");
+      const out = document.getElementById("letter-output");
+      out.style.display = "block";
+
+      let html = "";
+      if (d.outputMode === "OFFER") {
+        html = (d.mode === "EU") ? renderEN_EU(d) : renderEN_INTL(d) + renderPT_INTL(d);
+      } else if (d.outputMode === "PROGRAMME") {
+        html = renderProgrammeEN(d) + renderProgrammePT(d);
+      } else {
+        html = ((d.mode === "EU") ? renderEN_EU(d) : renderEN_INTL(d) + renderPT_INTL(d)) + renderProgrammeEN(d) + renderProgrammePT(d);
+      }
+
+      out.innerHTML = html;
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      showStatus("ok", "Preview generated. Now click Save Enrolment.");
+    }
+
+    async function saveEnrolment(){
+      const d = collectData();
+      const issues = validate(d);
+      if (issues.length){
+        showStatus("bad", "Cannot save. Please fix:\n- " + issues.join("\n- "));
+        alert("Cannot save. Please fix:\n\n- " + issues.join("\n- "));
+        return;
+      }
+
+      if (!APPS_SCRIPT_URL){
+        showStatus("bad", "Apps Script URL is not set.");
+        alert("Apps Script URL is not set.");
+        return;
+      }
+
+      const payload = {
+        token: SECRET_TOKEN,
+
+        mode: d.mode,
+        ref: d.ref,
+        fName: d.fName,
+        lName: d.lName,
+        dob: d.dobISO ? formatDateEN(d.dobISO) : "",
+        nat: d.nat,
+        idNum: d.idNum,
+
+        prog: d.prog,
+        progType: d.progType,
+        modeDel: d.modeDel,
+        lang: d.lang,
+        hours: d.hours,
+        start: d.startISO ? formatDateEN(d.startISO) : "",
+        end: d.endISO ? formatDateEN(d.endISO) : "",
+        totalDays: d.totalDays,
+
+        fee: d.fee,
+        feeScope: d.feeScope,
+        payStatus: d.payStatus,
+
+        accomText: d.accomText,
+        validUntil: d.validUntilISO ? formatDateEN(d.validUntilISO) : "",
+
+        instLegal: d.instLegal,
+        instBrand: d.instBrand,
+        instAddr: d.instAddr,
+        instPhone: d.instPhone,
+        instEmail: d.instEmail,
+        verifPerson: d.verifPerson,
+        verifEmail: d.verifEmail,
+        verifPhone: d.verifPhone,
+
+        notes: d.notes
+      };
+
+      showStatus("ok", "Saving enrolment to Google Sheet...");
+      updateSavePill("Saving...");
+
+      try{
+        const body = "payload=" + encodeURIComponent(JSON.stringify(payload));
+
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (data && data.ok){
+          lastRecordId = data.recordId;
+          updateSavePill("Saved: " + lastRecordId);
+          showStatus("ok", "Saved successfully. Record ID: " + lastRecordId + ". You can now print.");
+          document.getElementById("pBtn").style.display = "block";
+        } else {
+          const err = (data && data.error) ? data.error : "Unknown error.";
+          updateSavePill("Not saved");
+          showStatus("bad", "Save failed: " + err);
+          alert("Save failed: " + err);
+        }
+
+      } catch (e){
+        updateSavePill("Not saved");
+        showStatus("bad", "Save failed: " + String(e));
+        alert("Save failed: " + String(e));
+      }
+    }
+
+    function updateSavePill(text){
+      document.getElementById("pill-save").textContent = "💾 Save status: " + (text || "Not saved");
+    }
+
+    function showStatus(kind, msg){
+      const el = document.getElementById("statusLine");
+      el.style.display = "block";
+      el.className = "status-line " + (kind === "bad" ? "bad" : "ok");
+      el.textContent = msg;
+    }
+
+    function renderEN_EU(d){
+      const letterDateEN = formatDateEN(d.letterDateISO);
+      const dobEN = d.dobISO ? formatDateEN(d.dobISO) : "";
+      const startEN = d.startISO ? formatDateEN(d.startISO) : "";
+      const endEN = d.endISO ? formatDateEN(d.endISO) : "";
+      const validEN = d.validUntilISO ? formatDateEN(d.validUntilISO) : "—";
+
+      // Title can remain as-is, but programme type now can be long-term too.
+      return `
+      <div class="letter-page">
+        ${renderHeader(d)}
+        <div class="ref-row"><span>Date: ${escapeHTML(letterDateEN)}</span><span>Reference: ${escapeHTML(d.ref)}</span></div>
+        <div class="centered-title">OFFER FOR STUDY / TRAINING</div>
+
+        <p>
+          This letter confirms that <b>${escapeHTML(d.fName)} ${escapeHTML(d.lName)}</b>,<br>
+          Date of Birth: ${escapeHTML(dobEN)}<br>
+          ID Number: ${escapeHTML(d.idNum)}<br>
+          has been accepted to participate in a study / professional training programme at <b>${escapeHTML(d.instBrand)}</b>, under the conditions set out below.
+        </p>
+
+        <span class="section-header">1. Programme Information</span>
+        Programme Title: <b>${escapeHTML(d.prog)}</b><br>
+        Type of Programme: ${escapeHTML(d.progType)}<br>
+        Mode of Delivery: ${escapeHTML(d.modeDel)}<br>
+        Language of Instruction: ${escapeHTML(d.lang)}<br>
+        Weekly Contact Hours: ${escapeHTML(d.hours || "—")}<br>
+        Start Date: ${escapeHTML(startEN)}<br>
+        End Date: ${escapeHTML(endEN)}<br>
+        Total Duration: ${escapeHTML(String(d.totalDays))} day(s)
+
+        <span class="section-header">2. Educational Purpose</span>
+        The programme is designed exclusively for educational and professional development purposes and does not involve employment, paid or unpaid.
+
+        <span class="section-header">3. Programme Fees</span>
+        Total Programme Fee: €${escapeHTML(String(d.fee))}<br>
+        Scope of Fees: ${escapeHTML(d.feeScope || "—")}
+
+        <span class="section-header">4. Conditional Validity and Proof of Payment</span>
+        ${nl2brSafe(paymentEN)}
+
+        <span class="section-header">5. Accommodation and Living Arrangements</span>
+        ${escapeHTML(d.accomText)}<br>
+        Living costs, insurance, travel, and personal expenses remain the responsibility of the participant.
+
+        <span class="section-header">6. Attendance and Compliance</span>
+        The participant is expected to attend the programme as scheduled and comply with institutional regulations. Failure to comply may result in withdrawal.
+
+        <span class="section-header">7. Validity and Acceptance</span>
+        This offer is valid until: <b>${escapeHTML(validEN)}</b><br>
+        Acceptance of this offer requires: (1) signed confirmation by the participant; (2) submission of verified proof of full payment; and (3) compliance with applicable legal requirements.
+
+        <span class="section-header">9. Institutional Declaration</span>
+        We hereby confirm that the above-named individual is expected to attend a study / training programme at <b>${escapeHTML(d.instBrand)}</b> for the period specified above, subject to the conditions stated in this letter.
+
+        <div class="mini-contact">
+          <b>Verification Contact:</b> ${escapeHTML(d.verifPerson)}<br>
+          Email: ${escapeHTML(d.verifEmail)} ${d.verifPhone ? `| Tel: ${escapeHTML(d.verifPhone)}` : ""}
+        </div>
+
+        <div class="sig-row">
+          <div>Signed: ____________________<br><b>Admissions Office</b></div>
+          <div class="stamp-placeholder">INSTITUTIONAL STAMP</div>
+        </div>
+      </div>`;
+    }
+
+    function renderEN_INTL(d){
+      const letterDateEN = formatDateEN(d.letterDateISO);
+      const dobEN = d.dobISO ? formatDateEN(d.dobISO) : "";
+      const startEN = d.startISO ? formatDateEN(d.startISO) : "";
+      const endEN = d.endISO ? formatDateEN(d.endISO) : "";
+      const validEN = d.validUntilISO ? formatDateEN(d.validUntilISO) : "—";
+
+      return `
+      <div class="letter-page">
+        ${renderHeader(d)}
+        <div class="ref-row"><span>Date: ${escapeHTML(letterDateEN)}</span><span>Reference: ${escapeHTML(d.ref)}</span></div>
+        <div class="centered-title">OFFICIAL OFFER FOR SHORT-TERM STUDY / TRAINING</div>
+
+        <p>
+          This letter confirms that <b>${escapeHTML(d.fName)} ${escapeHTML(d.lName)}</b>,<br>
+          Date of Birth: ${escapeHTML(dobEN)}<br>
+          Nationality: ${escapeHTML(d.nat)}<br>
+          Passport Number: ${escapeHTML(d.idNum)}<br>
+          has been accepted to participate in a short-term study / professional training programme at <b>${escapeHTML(d.instBrand)}</b>, under the conditions set out below.
+        </p>
+
+        <span class="section-header">1. Programme Information</span>
+        Programme Title: <b>${escapeHTML(d.prog)}</b><br>
+        Type of Programme: ${escapeHTML(d.progType)}<br>
+        Mode of Delivery: ${escapeHTML(d.modeDel)}<br>
+        Language of Instruction: ${escapeHTML(d.lang)}<br>
+        Weekly Contact Hours: ${escapeHTML(d.hours || "—")}<br>
+        Start Date: ${escapeHTML(startEN)}</br>
+        End Date: ${escapeHTML(endEN)}<br>
+        Total Duration: ${escapeHTML(String(d.totalDays))} day(s) (not exceeding 90 days)
+
+        <span class="section-header">2. Educational Purpose</span>
+        The programme is designed exclusively for educational and professional development purposes. This programme does not constitute long-term studies, does not grant any residence rights, and does not involve employment, whether paid or unpaid.
+
+        <span class="section-header">3. Programme Fees</span>
+        Total Programme Fee: €${escapeHTML(String(d.fee))}<br>
+        Scope of Fees: ${escapeHTML(d.feeScope || "—")}
+
+        <span class="section-header">4. Conditional Validity and Proof of Payment</span>
+        ${nl2brSafe(paymentEN)}
+
+        <span class="section-header">5. Visa and Immigration Statement</span>
+        ${nl2brSafe(visaEN)}
+
+        <span class="section-header">6. Accommodation and Living Arrangements</span>
+        ${escapeHTML(d.accomText)}<br>
+        All living costs, travel expenses, medical insurance, and personal expenses remain the responsibility of the participant.
+
+        <span class="section-header">7. Attendance and Compliance</span>
+        ${nl2brSafe(complianceEN)}
+
+        <span class="section-header">8. Validity and Acceptance</span>
+        This offer is valid until: <b>${escapeHTML(validEN)}</b><br>
+        Acceptance of this offer requires: (1) signed confirmation by the participant; (2) submission of verified proof of full payment; and (3) compliance with all visa and legal requirements.
+
+        <span class="section-header">9. Institutional Declaration</span>
+        We hereby confirm that the above-named individual is expected to attend a short-term educational / training programme at <b>${escapeHTML(d.instBrand)}</b> for the period specified above, subject to the conditions stated in this letter.
+
+        <div class="mini-contact">
+          <b>Verification Contact:</b> ${escapeHTML(d.verifPerson)}<br>
+          Email: ${escapeHTML(d.verifEmail)} ${d.verifPhone ? `| Tel: ${escapeHTML(d.verifPhone)}` : ""}
+        </div>
+
+        <div class="sig-row">
+          <div>Signed: ____________________<br><b>Admissions Office</b></div>
+          <div class="stamp-placeholder">INSTITUTIONAL STAMP</div>
+        </div>
+      </div>`;
+    }
+
+
+    function autoFillProgrammeMeta(){
+      const prog = document.getElementById("prog").value;
+      const linkEl = document.getElementById("progLink");
+      const levelEl = document.getElementById("progLevel");
+      const certEl = document.getElementById("certAward");
+      const levelPtEl = document.getElementById("progLevelPT");
+      const certPtEl = document.getElementById("certAwardPT");
+      const defaults = {
+        "OTHM Level 3 Foundation Diploma in Information Technology": {
+          level: "Level 3 (Equivalent to UK pre-university foundation level; aligned with RQF/EQF frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-3-foundation-diploma-in-information-technology"
+        },
+        "OTHM Level 3 Diploma in Business Management": {
+          level: "Level 3 (Equivalent to UK pre-university foundation level; aligned with RQF/EQF frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-3-diploma-in-business-management"
+        },
+        "OTHM Level 3 Foundation Diploma in Engineering": {
+          level: "Level 3 (Equivalent to UK pre-university foundation level; aligned with RQF/EQF frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-3-foundation-diploma-in-engineering"
+        },
+        "OTHM Level 3 Foundation Diploma in Health and Social Care": {
+          level: "Level 3 (Equivalent to UK pre-university foundation level; aligned with RQF/EQF frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-3-foundation-diploma-in-health-and-social-care"
+        },
+        "OTHM Level 4 Diploma in Health and Social Care Management": {
+          level: "Level 4 (Equivalent to first-year undergraduate level within UK-regulated qualifications frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-4-diploma-in-health-and-social-care-management"
+        },
+        "OTHM Level 3 Foundation Diploma for Higher Education Studies": {
+          level: "Level 3 (Equivalent to UK pre-university foundation level; aligned with RQF/EQF frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-3-foundation-diploma-for-higher-education-studies"
+        },
+        "OTHM Level 4 Diploma in Cyber Security": {
+          level: "Level 4 (Equivalent to first-year undergraduate level within UK-regulated qualifications frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-4-diploma-in-cyber-security"
+        },
+        "OTHM Level 4 Diploma in Business Management": {
+          level: "Level 4 (Equivalent to first-year undergraduate level within UK-regulated qualifications frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-4-diploma-in-business-management"
+        },
+        "OTHM Level 4 Diploma in Tourism and Hospitality Management": {
+          level: "Level 4 (Equivalent to first-year undergraduate level within UK-regulated qualifications frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-4-diploma-in-tourism-and-hospitality-management"
+        },
+        "OTHM Level 4 Diploma in Information Technology": {
+          level: "Level 4 (Equivalent to first-year undergraduate level within UK-regulated qualifications frameworks)",
+          link: "https://othm.org.uk/qualification/othm-level-4-diploma-in-information-technology"
+        }
+      };
+      const meta = defaults[prog];
+      if (meta) {
+        if (!levelEl.value.trim()) levelEl.value = meta.level;
+        if (!linkEl.value.trim()) linkEl.value = meta.link;
+        if (!levelPtEl.value.trim()) levelPtEl.value = meta.level.replace("Level", "Nível").replace("Equivalent to", "Equivalente ao");
+      }
+      if (!certEl.value.trim()) certEl.value = prog + " (subject to meeting assessment requirements)";
+      if (!certPtEl.value.trim()) certPtEl.value = prog + " (sujeito ao cumprimento dos requisitos de avaliação)";
+    }
+
+    function bulletLinesToHTML(text){
+      const blocks = String(text || "").trim().split(/\n\s*\n/).filter(Boolean);
+      if (!blocks.length) return "—";
+      return blocks.map(block => `<p>${escapeHTML(block).replace(/\n/g, "<br>")}</p>`).join("");
+    }
+
+    function moduleBlocksHTML(text){
+      const blocks = String(text || "").trim().split(/\n\s*\n/).filter(Boolean);
+      if (!blocks.length) return "<p>—</p>";
+      return blocks.map(block => {
+        const lines = block.split(/\n/).filter(Boolean);
+        const title = lines.shift() || "";
+        const body = lines.join("<br>");
+        return `<p><b>${escapeHTML(title)}</b><br>${escapeHTML(body).replace(/\n/g, "<br>")}</p>`;
+      }).join("");
+    }
+
+    function renderProgrammeEN(d){
+      const letterDateEN = formatDateEN(d.letterDateISO);
+      const startEN = d.startISO ? formatDateEN(d.startISO) : "";
+      const endEN = d.endISO ? formatDateEN(d.endISO) : "";
+      return `
+      <div class="letter-page">
+        ${renderHeader(d)}
+        <div class="ref-row"><span>Date: ${escapeHTML(letterDateEN)}</span><span>Reference: ${escapeHTML(d.ref)}</span></div>
+        <div class="centered-title">PROGRAMME OF STUDY</div>
+        <p style="text-align:center;font-weight:700;margin-top:-6px;">Short-Term Academic Programme (≤ 90 Days)</p>
+
+        <span class="section-header">1. Institutional Information</span>
+        Institution: <b>${escapeHTML(d.instLegal)}</b><br>
+        Delivery Site: ${escapeHTML(d.deliverySite)}<br>
+        Programme Language: ${escapeHTML(d.lang)}<br>
+        Mode of Study: ${escapeHTML(d.modeDel)}<br>
+        Contact Hours: ${escapeHTML(d.hours || "—")}
+
+        <span class="section-header">2. Programme Identification</span>
+        Programme Title: <b>${escapeHTML(d.prog)}</b><br>
+        Programme Level: ${escapeHTML(d.progLevel)}<br>
+        Awarding Body: ${escapeHTML(d.awardingBody)}<br>
+        ${d.progLink ? `Official programme link: ${escapeHTML(d.progLink)}<br>` : ""}
+        Duration: ${escapeHTML(String(d.totalDays))} Days (within Schengen short-stay limit of 90 days)<br>
+        Start Date: ${escapeHTML(startEN)}<br>
+        End Date: ${escapeHTML(endEN)}
+
+        <span class="section-header">3. Purpose of the Programme</span>
+        ${bulletLinesToHTML(d.purposeTextPT || d.purposeText)}
+
+        <span class="section-header">4. Programme Structure</span>
+        <p>The programme is structured into integrated subject modules combining theoretical instruction, applied learning, and guided coursework.</p>
+        <p><b>Core Study Areas Include:</b></p>
+        ${moduleBlocksHTML(d.studyAreasPT || d.studyAreas)}
+
+        <span class="section-header">5. Weekly Academic Schedule</span>
+        ${bulletLinesToHTML(d.weeklySchedulePT || d.weeklySchedule)}
+
+        <span class="section-header">6. Teaching and Learning Approach</span>
+        ${bulletLinesToHTML(d.teachingApproachPT || d.teachingApproach)}
+
+        <span class="section-header">7. Assessment Methodology</span>
+        ${bulletLinesToHTML(d.assessmentMethodPT || d.assessmentMethod)}
+
+        <span class="section-header">8. Expected Learning Outcomes</span>
+        ${bulletLinesToHTML(d.learningOutcomesPT || d.learningOutcomes)}
+
+        <span class="section-header">9. Compliance with Visa Conditions</span>
+        <p>This programme is fully compliant with the conditions of a Short-Stay Schengen Visa (Type C):<br>
+        Total duration does not exceed 90 days<br>
+        Programme is full-time but short-term in nature<br>
+        No employment (paid or unpaid) is involved<br>
+        No residence rights are granted<br>
+        Participant is required to leave the Schengen Area upon completion.</p>
+
+        <span class="section-header">10. Attendance Requirements</span>
+        <p>Participants are expected to attend all scheduled sessions, maintain satisfactory academic engagement, and comply with institutional policies and Portuguese regulations. Failure to comply may result in withdrawal from the programme.</p>
+
+        <span class="section-header">11. Institutional Accreditation and Authorisation</span>
+        ${bulletLinesToHTML(d.accreditationTextPT || d.accreditationText)}
+
+        <span class="section-header">12. Certification</span>
+        <p>Upon successful completion of the programme, the participant will receive:<br><b>${escapeHTML(d.certAward)}</b></p>
+
+        <span class="section-header">13. Institutional Declaration</span>
+        <p>${escapeHTML(d.instBrand)} confirms that this Programme of Study is structured as a short-term academic programme, is delivered in compliance with applicable UK-regulated qualification standards in Portugal, and is appropriate for submission as supporting documentation for a Schengen visa application.</p>
+
+        <div class="mini-contact">
+          <b>Issued by:</b> Admissions Office<br>
+          ${escapeHTML(d.instBrand)}<br>
+          Contact: ${escapeHTML(d.instEmail)} | Tel: ${escapeHTML(d.instPhone)}
+        </div>
+
+        <div class="sig-row">
+          <div>Signed: ____________________<br><b>Admissions Office</b></div>
+          <div class="stamp-placeholder">INSTITUTIONAL STAMP</div>
+        </div>
+      </div>`;
+    }
+
+    function renderProgrammePT(d){
+      const letterDatePT_ = formatDatePT(d.letterDateISO);
+      const startPT_ = d.startISO ? formatDatePT(d.startISO) : "";
+      const endPT_ = d.endISO ? formatDatePT(d.endISO) : "";
+      return `
+      <div class="letter-page">
+        ${renderHeader(d)}
+        <div class="ref-row"><span>Data: ${escapeHTML(letterDatePT_)}</span><span>Referência: ${escapeHTML(d.ref)}</span></div>
+        <div class="centered-title">PROGRAMA DE ESTUDOS</div>
+        <p style="text-align:center;font-weight:700;margin-top:-6px;">Programa Académico de Curta Duração (≤ 90 Dias)</p>
+
+        <span class="section-header">1. Informação Institucional</span>
+        Instituição: <b>${escapeHTML(d.instLegal)}</b><br>
+        Local de Realização: ${escapeHTML(d.deliverySite)}<br>
+        Idioma do Programa: ${escapeHTML(d.lang)}<br>
+        Regime de Estudo: ${escapeHTML(d.modeDel)}<br>
+        Carga Horária: ${escapeHTML(d.hours || "—")}
+
+        <span class="section-header">2. Identificação do Programa</span>
+        Título do Programa: <b>${escapeHTML(d.prog)}</b><br>
+        Nível do Programa: ${escapeHTML(d.progLevelPT || d.progLevel)}<br>
+        Entidade Certificadora: ${escapeHTML(d.awardingBodyPT || d.awardingBody)}<br>
+        ${d.progLink ? `Ligação oficial do programa: ${escapeHTML(d.progLink)}<br>` : ""}
+        Duração: ${escapeHTML(String(d.totalDays))} Dias (dentro do limite Schengen de 90 dias)<br>
+        Data de Início: ${escapeHTML(startPT_)}<br>
+        Data de Fim: ${escapeHTML(endPT_)}
+
+        <span class="section-header">3. Finalidade do Programa</span>
+        ${bulletLinesToHTML(d.purposeText)}
+
+        <span class="section-header">4. Estrutura do Programa</span>
+        <p>O programa está estruturado em módulos integrados que combinam instrução teórica, aprendizagem aplicada e trabalho orientado.</p>
+        <p><b>As Principais Áreas de Estudo Incluem:</b></p>
+        ${moduleBlocksHTML(d.studyAreas)}
+
+        <span class="section-header">5. Horário Académico Semanal</span>
+        ${bulletLinesToHTML(d.weeklySchedule)}
+
+        <span class="section-header">6. Metodologia de Ensino e Aprendizagem</span>
+        ${bulletLinesToHTML(d.teachingApproach)}
+
+        <span class="section-header">7. Metodologia de Avaliação</span>
+        ${bulletLinesToHTML(d.assessmentMethod)}
+
+        <span class="section-header">8. Resultados de Aprendizagem Esperados</span>
+        ${bulletLinesToHTML(d.learningOutcomes)}
+
+        <span class="section-header">9. Conformidade com as Condições do Visto</span>
+        <p>Este programa está em total conformidade com as condições de um Visto Schengen de Curta Duração (Tipo C):<br>
+        A duração total não excede 90 dias<br>
+        O programa é a tempo inteiro, mas de natureza curta<br>
+        Não envolve qualquer atividade laboral (remunerada ou não)<br>
+        Não confere direitos de residência<br>
+        O participante deve deixar o Espaço Schengen após a conclusão.</p>
+
+        <span class="section-header">10. Requisitos de Assiduidade</span>
+        <p>Os participantes devem frequentar todas as sessões programadas, manter um envolvimento académico satisfatório e cumprir as políticas institucionais e os regulamentos portugueses. O incumprimento poderá resultar na exclusão do programa.</p>
+
+        <span class="section-header">11. Acreditação e Autorização Institucional</span>
+        ${bulletLinesToHTML(d.accreditationText)}
+
+        <span class="section-header">12. Certificação</span>
+        <p>Após a conclusão com sucesso do programa, o participante receberá:<br><b>${escapeHTML(d.certAwardPT || d.certAward)}</b></p>
+
+        <span class="section-header">13. Declaração Institucional</span>
+        <p>${escapeHTML(d.instBrand)} confirma que este Programa de Estudos está estruturado como um programa académico de curta duração, é ministrado em conformidade com os padrões aplicáveis das qualificações reguladas do Reino Unido em Portugal, e é adequado para apresentação como documento de suporte num pedido de visto Schengen.</p>
+
+        <div class="mini-contact">
+          <b>Emitido por:</b> Gabinete de Admissões<br>
+          ${escapeHTML(d.instBrand)}<br>
+          Contacto: ${escapeHTML(d.instEmail)} | Tel: ${escapeHTML(d.instPhone)}
+        </div>
+
+        <div class="sig-row">
+          <div>Assinado: ____________________<br><b>Gabinete de Admissões</b></div>
+          <div class="stamp-placeholder">CARIMBO DA INSTITUIÇÃO</div>
+        </div>
+      </div>`;
+    }
+
+
+    function renderPT_INTL(d){
+      const letterDatePT_ = formatDatePT(d.letterDateISO);
+      const dobPT_ = d.dobISO ? formatDatePT(d.dobISO) : "";
+      const startPT_ = d.startISO ? formatDatePT(d.startISO) : "";
+      const endPT_ = d.endISO ? formatDatePT(d.endISO) : "";
+      const validPT_ = d.validUntilISO ? formatDatePT(d.validUntilISO) : "—";
+
+      return `
+      <div class="letter-page">
+        ${renderHeader(d)}
+        <div class="ref-row"><span>Data: ${escapeHTML(letterDatePT_)}</span><span>Referência: ${escapeHTML(d.ref)}</span></div>
+        <div class="centered-title">CARTA DE OFERTA PARA ESTUDOS / FORMAÇÃO DE CURTA DURAÇÃO</div>
+
+        <p>
+          A presente carta confirma que <b>${escapeHTML(d.fName)} ${escapeHTML(d.lName)}</b>,<br>
+          Data de Nascimento: ${escapeHTML(dobPT_)}<br>
+          Nacionalidade: ${escapeHTML(d.nat)}<br>
+          Número do Passaporte: ${escapeHTML(d.idNum)}<br>
+          foi aceite para frequentar um programa de estudos / formação profissional de curta duração na <b>${escapeHTML(d.instBrand)}</b>, nos termos abaixo indicados.
+        </p>
+
+        <span class="section-header">1. Informação do Programa</span>
+        Título do Programa: <b>${escapeHTML(d.prog)}</b><br>
+        Tipo de Programa: ${escapeHTML(d.progType)}<br>
+        Regime: ${escapeHTML(d.modeDel)}<br>
+        Idioma de Ensino: ${escapeHTML(d.lang)}<br>
+        Carga Horária Semanal: ${escapeHTML(d.hours || "—")}<br>
+        Data de Início: ${escapeHTML(startPT_)}<br>
+        Data de Conclusão: ${escapeHTML(endPT_)}<br>
+        Duração Total: ${escapeHTML(String(d.totalDays))} dia(s) (não superior a 90 dias)
+
+        <span class="section-header">2. Finalidade Educativa</span>
+        O programa destina-se exclusivamente a fins educativos e de desenvolvimento profissional. Este programa não constitui estudos de longa duração, não confere direito de residência e não envolve qualquer atividade laboral, remunerada ou não.
+
+        <span class="section-header">3. Taxas do Programa</span>
+        Valor Total do Programa: €${escapeHTML(String(d.fee))}<br>
+        Âmbito das Taxas: ${escapeHTML(d.feeScope || "—")}
+
+        <span class="section-header">4. Validade Condicionada e Comprovativo de Pagamento</span>
+        ${nl2brSafe(paymentPT)}
+
+        <span class="section-header">5. Declaração para Visto Schengen</span>
+        ${nl2brSafe(visaPT)}
+
+        <span class="section-header">6. Alojamento e Despesas</span>
+        ${escapeHTML(d.accomText)}<br>
+        Todas as despesas de subsistência, transporte, seguro médico e despesas pessoais são da responsabilidade do participante.
+
+        <span class="section-header">7. Assiduidade e Conformidade</span>
+        ${nl2brSafe(compliancePT)}
+
+        <span class="section-header">8. Validade e Aceitação</span>
+        Esta oferta é válida até: <b>${escapeHTML(validPT_)}</b><br>
+        A aceitação implica: (1) assinatura desta carta pelo participante; (2) apresentação de comprovativo de pagamento integral verificado; e (3) cumprimento de todos os requisitos legais e de visto.
+
+        <span class="section-header">9. Declaração Institucional</span>
+        Confirmamos que o participante acima identificado é esperado para frequentar um programa educativo / formativo de curta duração na <b>${escapeHTML(d.instBrand)}</b>, pelo período indicado, sujeito às condições descritas nesta carta.
+
+        <div class="mini-contact">
+          <b>Contacto para Verificação:</b> ${escapeHTML(d.verifPerson)}<br>
+          Email: ${escapeHTML(d.verifEmail)} ${d.verifPhone ? `| Tel: ${escapeHTML(d.verifPhone)}` : ""}
+        </div>
+
+        <div class="sig-row">
+          <div>Assinado: ____________________<br><b>Gabinete de Admissões</b></div>
+          <div class="stamp-placeholder">CARIMBO DA INSTITUIÇÃO</div>
+        </div>
+      </div>`;
+    }
+  </script>
+</html>
